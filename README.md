@@ -12,3 +12,17 @@ NON CI ASSUMIAMO NESSUNA RESPONSABILITÀ.
 Viene fornito come testo semplice, senza file appositi, presupponendo un minimo di buon senso da parte tua.
 
 QUESTO PROGRAMMA COMPLETO E STATO ESEGUTO SU WINDOWS11 INTEL CORE I5
+
+NELLA BARRA DELLA TUA CARTELLA COME NEI BROWSER SCRIVI "cmd"  COPIA E INCOLLA:
+pip install pandas numpy scikit-learn xgboost lightgbm scipy joblib
+
+
+SE NON VUOI USARE PIU' QUESTO PROGRAMMA BASTA FARE COPIA E INCOLLA DI QUESTO:
+
+pip uninstall pandas numpy scikit-learn xgboost lightgbm scipy joblib -y
+
+
+i programmi utili sono:
+
+https://www.python.org/downloads/
+https://notepad-plus-plus.org/downloads/
