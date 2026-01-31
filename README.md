@@ -23,6 +23,8 @@ pip uninstall pandas numpy scikit-learn xgboost lightgbm scipy joblib -y
 
 
 i programmi utili sono:
-
+dove scaricherai il programma python
 https://www.python.org/downloads/
+
+dove scaricherai il programma per edit code
 https://notepad-plus-plus.org/downloads/
