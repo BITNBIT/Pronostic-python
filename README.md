@@ -3,6 +3,8 @@ Programma Python per la creazione di pronostici
 
 ☕ Offrimi un caffè: https://buymeacoffee.com/bitnbit
 
+VIDEO COMPLETO: https://youtu.be/kU5DPSxOFEk?si=6X0QgFD9iPT1gqDY
+
 IL GIOCO È SEVERAMENTE VIETATO AI MINORI DI 18 ANNI
 Questo programma, trasmesso in chiaro, ha SOLO finalità EDUCATIVE.
 Non è in alcun modo consentita la replica.
