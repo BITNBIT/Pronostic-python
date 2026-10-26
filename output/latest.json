@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-26T18:46:15",
+ "generated": "2026-10-26T18:51:58",
  "data": {
   "matches": 24168,
   "last_result": "2026-10-19",
@@ -7,7 +7,17 @@
    "football-data": 23115,
    "legacy": 1053
   },
-  "fixtures": 20
+  "fixtures": 20,
+  "fixtures_by_league": {
+   "I1": 20
+  },
+  "diag": {
+   "fd_results": 900,
+   "fd_fixtures": {},
+   "of_played": 739,
+   "of_future": 401,
+   "unreachable": []
+  }
  },
  "model": {
   "market_model": {
@@ -56,7 +66,7 @@
    },
    "n_train": 20886
   },
-  "trained": "2026-10-26T18:46:15",
+  "trained": "2026-10-26T18:51:58",
   "sig": "548be4f96832"
  },
  "predictions": [
