@@ -1,58 +1,69 @@
-# Pronostic-python
-Programma Python per la creazione di pronostici
+# Pronostic-python · TITAN v6
 
-☕ Offrimi un caffè: https://buymeacoffee.com/bitnbit
+Sistema **automatico** di pronostici per Serie A e Serie B. Non va toccato niente a mano: ogni giorno GitHub Actions scarica risultati, quote e calendario, aggiorna i rating, riallena il modello, genera i pronostici, verifica quelli passati e pubblica la dashboard.
 
-VIDEO COMPLETO: https://youtu.be/kU5DPSxOFEk?si=6X0QgFD9iPT1gqDY
+☕ Offrimi un caffè: https://buymeacoffee.com/bitnbit · Video (v5): https://youtu.be/kU5DPSxOFEk · Sito: https://bitnbit.com
 
-IL GIOCO È SEVERAMENTE VIETATO AI MINORI DI 18 ANNI
-Questo programma, trasmesso in chiaro, ha SOLO finalità EDUCATIVE.
-Non è in alcun modo consentita la replica.
+> **IL GIOCO È VIETATO AI MINORI DI 18 ANNI.** Progetto a scopo educativo/statistico. Nessuna garanzia di vincita: le scommesse comportano perdite. L'autore non si assume alcuna responsabilità.
 
-L’autore NON SI ASSUME NESSUNA RESPONSABILITÀ per l’installazione sul tuo PC: nessuno ti ha forzato a installarlo.
+## Cosa fa (giro automatico giornaliero)
 
-NON CI ASSUMIAMO NESSUNA RESPONSABILITÀ.
+| Passo | Dettaglio |
+|---|---|
+| Dati | football-data.co.uk (risultati, tiri, quote medie/Pinnacle/max, Over/Under, calendario con quote) + openfootball (risultati/calendario di riserva) + mirror storico + vecchi file v5. Nomi squadra normalizzati, duplicati rimossi |
+| Rating | Elo con margine gol e regressione a inizio stagione, attacco/difesa Poisson online, forma 5/10, rendimento casa/trasferta, tiri e tiri in porta, riposo, classifica calcolata dai risultati |
+| Modelli | LightGBM + regressione logistica (1X2), Poisson-boosting + Dixon-Coles (gol, risultato esatto, O/U, GG, multigol), probabilità del mercato. Blend con pesi stimati out-of-sample sulle ultime 3 stagioni |
+| Doppio modello | con quote (partite già quotate) e "solo campo" (quote non ancora disponibili) |
+| Output | 1X2, doppia chance, O/U 1.5/2.5/3.5, GG/NG, multigol, top-5 risultati esatti, xG, stelle di confidenza, **value bet** (edge ≥ 5%, stake Kelly 1/4, max 3%) |
+| Verifica | ogni pronostico viene salvato prima della partita e controllato a risultato acquisito (`output/history.csv`): accuratezza e ROI reali |
+| Report | `docs/index.html` (dashboard, GitHub Pages), `output/PRONOSTICI.md`, `output/latest.json/csv`, Telegram opzionale |
 
-Viene fornito come testo semplice, senza file appositi, presupponendo un minimo di buon senso da parte tua.
+## Risultati del backtest (walk-forward, 8 stagioni 2018/19 → 2025/26, 6.042 partite mai viste in training)
 
-QUESTO PROGRAMMA COMPLETO E STATO ESEGUTO SU WINDOWS11 INTEL CORE I5
+| | Accuratezza 1X2 | Log-loss |
+|---|---|---|
+| TITAN v6 (con quote) | **49,9%** | **1,0010** |
+| Mercato (quote bookmaker) | 49,7% | 1,0043 |
+| TITAN v6 solo campo | 48,5% | 1,0157 |
+| Caso | 33,3% | 1,0986 |
 
-NELLA BARRA DELLA TUA CARTELLA COME NEI BROWSER SCRIVI "cmd"  COPIA E INCOLLA:
-pip install pandas numpy scikit-learn xgboost lightgbm scipy joblib
+- Probabilità ben calibrate: quando dice 70%, succede circa il 70% delle volte. Confidenza ≥ 65%: 69–80% di pronostici azzeccati.
+- Value bet (edge ≥ 5%, quote medie): 521 giocate, ROI simulato **+14%**. È un segnale interessante ma **non una certezza**: campione piccolo e concentrato nelle ultime stagioni, quote medie non sempre disponibili, mercati che si adattano. Lo storico live in dashboard dice la verità nel tempo.
+- La v5 dichiarava accuratezze più alte perché calcolava le statistiche sull'intero storico, **compresa la partita da prevedere** (leakage). La v6 usa solo informazioni disponibili prima del calcio d'inizio.
 
+## Automazione (zero lavoro manuale)
 
-SE NON VUOI USARE PIU' QUESTO PROGRAMMA BASTA FARE COPIA E INCOLLA DI QUESTO:
+Il workflow `.github/workflows/titan.yml` gira:
+- ogni giorno alle ~07:10 (risultati, rating, pronostici, verifica);
+- venerdì, sabato e domenica alle ~12:40 (quote aggiornate);
+- il lunedì anche il backtest completo.
 
-pip uninstall pandas numpy scikit-learn xgboost lightgbm scipy joblib -y
+Pubblica in automatico `data/`, `output/` e `docs/`. Dashboard: **https://bitnbit.github.io/Pronostic-python/**
 
+Telegram (facoltativo): in *Settings → Secrets → Actions* aggiungi `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`. Ogni partita viene inviata una sola volta, 48 ore prima.
 
-i programmi utili sono:
-dove scaricherai il programma python
-https://www.python.org/downloads/
+## Uso locale (facoltativo)
 
-dove scaricherai il programma per edit code
-https://notepad-plus-plus.org/downloads/
+Windows: doppio clic su `avvia_titan.bat` (installa, aggiorna e apre la dashboard).
 
-sito developer: https://bitnbit.com
+```bash
+pip install -r requirements.txt
+python -m titan run                      # tutto il ciclo
+python -m titan predict Juve Napoli      # partita qualsiasi
+python -m titan predict Bari Palermo --odds 2.40 3.10 3.20   # con quote -> value bet
+python -m titan table I2                 # classifica + Elo Serie B
+python -m titan backtest                 # backtest completo
+python -m titan update --full            # ricostruisce lo storico da zero
+```
 
-nei file ho allegato una riga di comando per istallare tutti i pacchetti in cmd nella cartella
+Parametri (soglie value bet, Kelly, Elo, giorni di anticipo) in `titan/config.py`.
 
-DESCRIZIONE:
+## Struttura
 
-Questo è TITAN Master System v5.0, un sistema di analisi per il calcio.
-In pratica, è un programma che studia i dati delle partite e ti aiuta a fare previsioni più informate.
-Funziona così: tu gli fornisci quattro file con i dati storici delle partite e le classifiche attuali. Lui legge questi file e inizia a elaborarli.
-Il sistema analizza trent'anni di partite di Serie A e Serie B. Per ogni squadra calcola una sorta di "punteggio" che aumenta quando vince e diminuisce quando perde, simile a come funziona il rating negli scacchi.
-Poi, per ogni partita che vuoi analizzare, considera una ventina di fattori: la forma recente delle squadre, i gol fatti e subiti, i risultati precedenti, il fattore campo... Insomma, tutte quelle cose che normalmente un appassionato considera, ma in modo sistematico.
-Una volta fatto questo lavoro di analisi, tre modelli di intelligenza artificiale lavorano insieme per darti una previsione. Non si tratta di magia, ma di statistica applicata a migliaia di partite passate.
-Cosa ottieni alla fine? Per ogni partita, il sistema ti dice:
-•	Qual è l'esito più probabile (1, X o 2)
-•	Con quale percentuale di probabilità
-•	Quanti gol si aspetta da ogni squadra
-•	Il punteggio più probabile
-•	E altre informazioni utili come la probabilità di over/under o gol-gol
-L'interfaccia è semplice: un menu con poche opzioni. Scegli la partita, inserisci le squadre, e in pochi secondi hai il responso.
-Il sistema impara col tempo: più dati gli fornisci, più affina le sue previsioni. È uno strumento che aiuta a prendere decisioni basandosi sui dati invece che solo sull'istinto.
-Non promette miracoli, ma offre un'analisi approfondita che può essere utile a chi segue il calcio e vuole avere un punto di vista più informato.
-
-
+```
+titan/            sources · teams · engine (rating/feature) · models · betting · backtest · tracker · report · notify · pipeline
+data/matches.csv  storico unificato (aggiornato dal bot) · data/fixtures.csv prossime partite
+output/           latest.json/csv · PRONOSTICI.md · history.csv (verifica live) · backtest.json · predictions/AAAA-MM-GG.json
+docs/index.html   dashboard
+legacy/           TITAN v5 originale (menu manuale) e file classifica
+```
