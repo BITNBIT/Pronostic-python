@@ -40,11 +40,11 @@ def send(preds: pd.DataFrame, hours: int = 48) -> int:
     lines = ["<b>⚽ TITAN v6 – pronostici</b>"]
     for r in p.itertuples():
         star = "★" * int(r.stars)
-        vb = f"\n   💰 VALUE: <b>{r.vb_bet}</b> @{r.vb_odds:.2f} (edge {r.vb_edge:+.0%})" if isinstance(r.vb_bet, str) else ""
+        vb = f"\n   📊 valore statistico: {r.vb_bet} @{r.vb_odds:.2f}" if isinstance(r.vb_bet, str) else ""
         lines.append(f"\n<b>{r.home} - {r.away}</b> ({C.LEAGUES[r.league]['name']}, {r.date} {r.time})\n"
                      f"   {r.pick} {r.conf:.0%} {star} | 1 {r.p1:.0%} X {r.px:.0%} 2 {r.p2:.0%}\n"
-                     f"   {r.ou_pick} ({max(r.o25, 1 - r.o25):.0%}) · {r.gg_pick} · esatto {r.score}{vb}")
-    lines.append("\n<i>Solo statistica, nessuna garanzia. Gioco vietato ai minori.</i>")
+                     f"   più probabile: <b>{r.safe_pick}</b> {r.safe_p:.0%} · {r.ou_pick} · {r.gg_pick} · esatto {r.score}{vb}")
+    lines.append("\n<i>Analisi statistica, non consiglio di gioco. Vietato ai minori di 18 anni.</i>")
     text, ok = "", True
     for ln in lines:  # Telegram: max 4096 caratteri per messaggio
         if len(text) + len(ln) > 3800:

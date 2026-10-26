@@ -8,7 +8,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from . import betting
+from . import betting, markets
 from . import config as C
 from .models import DualModel, logloss, rps, target
 
@@ -88,8 +88,29 @@ def run(feat: pd.DataFrame, p: C.Params | None = None, seasons: list[int] | None
             conf.append({"range": f"{a:.0%}-{min(b, 1):.0%}", "n": int(sel.sum()),
                          "acc": round(float((P[sel].argmax(1) == y[sel]).mean()), 4)})
 
+    # mercati: calibrazione e "pronostico più probabile"
+    hg, ag = allt["fthg"].to_numpy(int), allt["ftag"].to_numpy(int)
+    MP = markets.probs(allp)
+    mk_cal = []
+    for k in MP.columns:
+        h = markets.hit(k, hg, ag)
+        top = MP[k].to_numpy() >= 0.70
+        mk_cal.append({"market": k, "pred": round(float(MP[k].mean()), 4), "real": round(float(h.mean()), 4),
+                       "n70": int(top.sum()), "hit70": round(float(h[top].mean()), 4) if top.any() else None})
+    sp = markets.best_pick(allp)
+    sh = np.array([markets.hit(m, [a], [b])[0] for m, a, b in zip(sp["safe_pick"], hg, ag)])
+    safe = []
+    for thr in (0.0, 0.65, 0.70, 0.75, 0.80, 0.85):
+        sel = sp["safe_p"].to_numpy() >= thr
+        if sel.sum() >= 20:
+            safe.append({"min_p": thr, "n": int(sel.sum()), "share": round(float(sel.mean()), 4),
+                         "pred": round(float(sp["safe_p"].to_numpy()[sel].mean()), 4),
+                         "hit": round(float(sh[sel].mean()), 4)})
+    safe_mix = sp["safe_pick"].value_counts(normalize=True).round(3).to_dict()
+
     res = {
         "generated": datetime.now().isoformat(timespec="seconds"),
+        "markets": mk_cal, "safe": safe, "safe_mix": safe_mix,
         "seasons": per,
         "overall": {"n": int(len(y)), "acc": round(float((P.argmax(1) == y).mean()), 4), "ll": round(logloss(y, P), 4),
                     "rps": round(rps(y, P), 4),

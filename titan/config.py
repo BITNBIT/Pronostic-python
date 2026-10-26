@@ -19,12 +19,13 @@ FIXTURES_CSV = DATA_DIR / "fixtures.csv"
 HISTORY_CSV = OUTPUT_DIR / "history.csv"
 
 LEAGUES = {
-    "I1": {"name": "Serie A", "level": 1, "fd_first": 1993, "of_code": "it.1", "legacy": "storicoseriea.txt"},
-    "I2": {"name": "Serie B", "level": 2, "fd_first": 1997, "of_code": "it.2", "legacy": "storicoserieb.txt"},
+    "I1": {"name": "Serie A", "level": 1, "fd_first": 1993, "of_code": "it.1", "espn": "ita.1", "legacy": "storicoseriea.txt"},
+    "I2": {"name": "Serie B", "level": 2, "fd_first": 1997, "of_code": "it.2", "espn": "ita.2", "legacy": "storicoserieb.txt"},
 }
 
 FD_BASE = "https://www.football-data.co.uk/mmz4281/{code}/{div}.csv"
 FD_FIXTURES = "https://www.football-data.co.uk/fixtures.csv"
+ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/{code}/scoreboard?dates={d1}-{d2}&limit=300"
 OF_BASE = "https://raw.githubusercontent.com/openfootball/football.json/master/{season}/{code}.json"
 # mirror GitHub del dataset football-data (quote incluse) usato come fallback storico
 CLUBDATA_URL = "https://raw.githubusercontent.com/xgabora/Club-Football-Match-Data-2000-2025/main/data/Matches.csv"
