@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-26T19:11:04",
+ "generated": "2026-10-26T19:16:02",
  "data": {
   "matches": 24168,
   "last_result": "2026-10-19",
@@ -12,7 +12,7 @@
    "I1": 20
   },
   "diag": {
-   "fd_results": 23115,
+   "fd_results": 900,
    "fd_fixtures": {
     "I1": 10,
     "I2": 10
@@ -22,9 +22,9 @@
    "of_played": 739,
    "of_future": 401,
    "unknown_names": [],
-   "unreachable": [
-    "site.api.espn.com"
-   ]
+   "unreachable": {
+    "site.api.espn.com": "HTTP 400"
+   }
   }
  },
  "model": {
