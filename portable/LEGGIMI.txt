@@ -1,0 +1,24 @@
+TITAN v6 - VERSIONE PORTATILE (Windows 10/11, 64 bit)
+=====================================================
+
+NON INSTALLA NULLA SUL TUO PC
+- Python e tutte le librerie sono dentro questa cartella (python\).
+- Niente installazioni, niente modifiche a registro, PATH o Python di sistema.
+- Dati, modello, cache e file temporanei restano qui (app\ e cache\).
+- Funziona anche da chiavetta USB.
+- Per eliminarlo: cancella la cartella. Fine.
+
+COME SI USA
+1. Estrai TUTTO lo zip in una cartella (non avviarlo dall'interno dello zip).
+2. Doppio clic su TITAN.bat
+3. Scegli 1: scarica i dati, calcola i pronostici e apre la dashboard nel browser.
+   Il primo avvio scarica lo storico partite (1-3 minuti, serve internet).
+
+Se Windows mostra "PC protetto da Windows" (SmartScreen): "Ulteriori informazioni" -> "Esegui comunque".
+Il file .bat e' testo leggibile: puoi aprirlo con il Blocco note e controllare cosa fa.
+
+Pronostici sempre aggiornati anche senza scaricare nulla: https://bitnbit.github.io/Pronostic-python/
+Codice sorgente: https://github.com/BITNBIT/Pronostic-python
+
+Analisi statistica a scopo educativo, non consiglio di gioco. Nessuna garanzia.
+IL GIOCO E' VIETATO AI MINORI DI 18 ANNI e puo' causare dipendenza.
