@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "10 5 * * *"        # ogni giorno ~07:10 ora italiana: risultati, rating, pronostici
     - cron: "40 10 * * 5,6,0"   # ven-sab-dom ~12:40: quote aggiornate prima delle partite
+  push:
+    branches: [main]
+    paths: ["titan/**", "requirements.txt", ".github/workflows/titan.yml"]
   workflow_dispatch:
     inputs:
       backtest:
@@ -55,11 +58,14 @@ jobs:
         run: python -m titan run
 
       - name: Backtest settimanale (lunedì) o su richiesta
-        if: ${{ inputs.backtest || github.event.schedule == '10 5 * * *' }}
+        if: ${{ inputs.backtest || github.event_name == 'push' || github.event.schedule == '10 5 * * *' }}
         run: |
-          if [ "${{ inputs.backtest }}" = "true" ] || [ "$(date -u +%u)" = "1" ]; then
+          if [ "${{ inputs.backtest }}" = "true" ] || [ "${{ github.event_name }}" = "push" ] || [ "$(date -u +%u)" = "1" ]; then
             python -m titan backtest
           fi
+
+      - name: Test
+        run: pip install -q pytest && python -m pytest -q tests
 
       - name: Pubblica risultati
         run: |

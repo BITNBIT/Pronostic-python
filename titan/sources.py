@@ -307,6 +307,10 @@ def update(full: bool = False, offline: bool = False) -> tuple[pd.DataFrame, pd.
             if len(cd):
                 register_known(pd.concat([cd["home"], cd["away"]]).unique())
             frames.append(cd)
+        elif not (existing["source"] == "football-data").any():
+            # primo giro con football-data raggiungibile: scarica tutto lo storico (quote Pinnacle, tiri)
+            seasons = list(range(1993, cur + 1))
+            refresh = {cur, cur - 1}
         else:
             seasons = [cur - 1, cur]
             refresh = {cur, cur - 1}
