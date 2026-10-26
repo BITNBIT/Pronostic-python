@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-26T18:51:58",
+ "generated": "2026-10-26T19:11:04",
  "data": {
   "matches": 24168,
   "last_result": "2026-10-19",
@@ -12,11 +12,19 @@
    "I1": 20
   },
   "diag": {
-   "fd_results": 900,
-   "fd_fixtures": {},
+   "fd_results": 23115,
+   "fd_fixtures": {
+    "I1": 10,
+    "I2": 10
+   },
+   "espn_played": 0,
+   "espn_future": {},
    "of_played": 739,
    "of_future": 401,
-   "unreachable": []
+   "unknown_names": [],
+   "unreachable": [
+    "site.api.espn.com"
+   ]
   }
  },
  "model": {
@@ -66,7 +74,7 @@
    },
    "n_train": 20886
   },
-  "trained": "2026-10-26T18:51:58",
+  "trained": "2026-10-26T19:11:04",
   "sig": "548be4f96832"
  },
  "predictions": [
@@ -110,7 +118,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.7842,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 1
@@ -155,7 +164,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.9227,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 5
@@ -200,7 +210,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "X2",
+   "safe_p": 0.8077,
    "ou_pick": "Under 2.5",
    "gg_pick": "NG",
    "stars": 3
@@ -245,7 +256,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.8459,
    "ou_pick": "Under 2.5",
    "gg_pick": "NG",
    "stars": 3
@@ -290,7 +302,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Under 3.5",
+   "safe_p": 0.7565,
    "ou_pick": "Under 2.5",
    "gg_pick": "GG",
    "stars": 1
@@ -335,7 +348,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "X2",
+   "safe_p": 0.9191,
    "ou_pick": "Over 2.5",
    "gg_pick": "NG",
    "stars": 5
@@ -380,7 +394,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "X2",
+   "safe_p": 0.8318,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 3
@@ -425,7 +440,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.8046,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 2
@@ -470,7 +486,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.8208,
    "ou_pick": "Under 2.5",
    "gg_pick": "NG",
    "stars": 3
@@ -515,7 +532,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.7599,
    "ou_pick": "Under 2.5",
    "gg_pick": "GG",
    "stars": 1
@@ -560,7 +578,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.7709,
    "ou_pick": "Under 2.5",
    "gg_pick": "GG",
    "stars": 2
@@ -605,7 +624,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "X2",
+   "safe_p": 0.8846,
    "ou_pick": "Under 2.5",
    "gg_pick": "NG",
    "stars": 4
@@ -650,7 +670,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.7861,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 2
@@ -695,7 +716,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.9109,
    "ou_pick": "Over 2.5",
    "gg_pick": "NG",
    "stars": 5
@@ -740,7 +762,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.7909,
    "ou_pick": "Under 2.5",
    "gg_pick": "GG",
    "stars": 2
@@ -785,7 +808,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.8601,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 3
@@ -830,7 +854,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Under 3.5",
+   "safe_p": 0.7825,
    "ou_pick": "Under 2.5",
    "gg_pick": "NG",
    "stars": 1
@@ -875,7 +900,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.813,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 2
@@ -920,7 +946,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "Over 1.5",
+   "safe_p": 0.7689,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 1
@@ -965,7 +992,8 @@
    "vb_bet": null,
    "vb_odds": null,
    "vb_edge": null,
-   "vb_stake": null,
+   "safe_pick": "1X",
+   "safe_p": 0.8675,
    "ou_pick": "Over 2.5",
    "gg_pick": "GG",
    "stars": 4
