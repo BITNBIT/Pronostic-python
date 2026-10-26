@@ -10,13 +10,13 @@ from . import config as C
 
 KEY = ["league", "season", "home", "away"]
 KEEP = ["date", "time", "league", "season", "home", "away", "p1", "px", "p2", "pick", "conf", "stars", "dc", "o25", "gg",
-        "score", "odds_1", "odds_x", "odds_2", "odds_o25", "odds_u25", "vb_bet", "vb_odds", "vb_edge", "vb_stake"]
+        "score", "safe_pick", "safe_p", "odds_1", "odds_x", "odds_2", "odds_o25", "odds_u25", "vb_bet", "vb_odds", "vb_edge"]
 
 
 def load() -> pd.DataFrame:
     if C.HISTORY_CSV.exists():
         return pd.read_csv(C.HISTORY_CSV, low_memory=False)
-    return pd.DataFrame(columns=KEEP + ["created", "fthg", "ftag", "result", "hit", "hit_o25", "hit_gg", "hit_score",
+    return pd.DataFrame(columns=KEEP + ["created", "fthg", "ftag", "result", "hit", "hit_o25", "hit_gg", "hit_score", "hit_safe",
                                         "bet_win", "bet_pnl", "ll", "settled"])
 
 
@@ -52,6 +52,9 @@ def update(preds: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
         m.loc[todo, "hit"] = r["pick"].to_numpy() == result
         m.loc[todo, "hit_o25"] = (r["o25"].to_numpy() >= 0.5) == ((hg + ag).to_numpy() > 2.5)
         m.loc[todo, "hit_gg"] = (r["gg"].to_numpy() >= 0.5) == ((hg > 0) & (ag > 0)).to_numpy()
+        from .markets import MARKETS
+        m.loc[todo, "hit_safe"] = [bool(MARKETS[k][1](x, y)) if k in MARKETS else np.nan
+                                   for k, x, y in zip(r["safe_pick"].astype(str), hg, ag)]
         m.loc[todo, "hit_score"] = r["score"].to_numpy() == (hg.astype(str) + "-" + ag.astype(str)).to_numpy()
         pr = r[["p1", "px", "p2"]].to_numpy(float)
         idx = np.select([result == "1", result == "X"], [0, 1], 2)
@@ -88,6 +91,7 @@ def stats(h: pd.DataFrame) -> dict:
         "acc_1x2": round(float(_b(s["hit"]).mean()), 4), "acc_o25": round(float(_b(s["hit_o25"]).mean()), 4),
         "acc_gg": round(float(_b(s["hit_gg"]).mean()), 4), "acc_score": round(float(_b(s["hit_score"]).mean()), 4),
         "logloss": round(float(pd.to_numeric(s["ll"]).mean()), 4),
+        "acc_safe": round(float(_b(s["hit_safe"]).mean()), 4) if "hit_safe" in s else None,
         "bets": int(len(bets)),
         "bets_hit": round(float(_b(bets["bet_win"]).mean()), 4) if len(bets) else None,
         "bets_units": round(float(pd.to_numeric(bets["bet_pnl"]).sum()), 2) if len(bets) else 0.0,
@@ -98,6 +102,7 @@ def stats(h: pd.DataFrame) -> dict:
                       "units": round(float(pd.to_numeric(g["bet_pnl"]).sum()), 2)} for k, g in s.groupby("month")],
         "pnl_curve": [round(float(x), 2) for x in pd.to_numeric(bets["bet_pnl"]).cumsum()] if len(bets) else [],
         "recent": s.tail(30)[["date", "league", "home", "away", "pick", "conf", "result", "fthg", "ftag", "hit",
+                              "safe_pick", "hit_safe",
                               "vb_bet", "vb_odds", "bet_pnl"]].iloc[::-1].to_dict("records"),
     }
     return out

@@ -88,7 +88,8 @@ def _finish(df: pd.DataFrame, source: str, prio: int) -> pd.DataFrame:
 
 # ----------------------------------------------------------------------------- football-data.co.uk
 def _canon_fd(raw: pd.DataFrame, league: str | None = None) -> pd.DataFrame:
-    raw = raw.rename(columns=lambda c: str(c).strip().replace("﻿", ""))
+    # BOM UTF-8 letto come latin1 diventa "\u00ef\u00bb\u00bf": va tolto o la colonna Div non viene riconosciuta
+    raw = raw.rename(columns=lambda c: str(c).replace("\ufeff", "").replace("\u00ef\u00bb\u00bf", "").strip())
     if "HomeTeam" not in raw.columns and "Home" in raw.columns:
         raw = raw.rename(columns={"Home": "HomeTeam", "Away": "AwayTeam", "HG": "FTHG", "AG": "FTAG"})
     if "HomeTeam" not in raw.columns:
@@ -231,6 +232,42 @@ def fetch_openfootball(seasons: list[int]) -> tuple[pd.DataFrame, pd.DataFrame]:
     return played, future
 
 
+# ----------------------------------------------------------------------------- ESPN (risultati recenti + calendario)
+def fetch_espn(days_back: int = 14, days_ahead: int = 14) -> tuple[pd.DataFrame, pd.DataFrame]:
+    today = date.today()
+    d1 = (today - timedelta(days=days_back)).strftime("%Y%m%d")
+    d2 = (today + timedelta(days=days_ahead)).strftime("%Y%m%d")
+    rows = []
+    for div, meta in C.LEAGUES.items():
+        b = http_get(C.ESPN_BASE.format(code=meta["espn"], d1=d1, d2=d2), retries=2)
+        if not b:
+            continue
+        try:
+            events = json.loads(b).get("events", [])
+        except Exception:  # noqa: BLE001
+            continue
+        for ev in events:
+            try:
+                comp = ev["competitions"][0]
+                st = (comp.get("status") or ev.get("status") or {}).get("type", {})
+                if st.get("name") in ("STATUS_POSTPONED", "STATUS_CANCELED", "STATUS_ABANDONED", "STATUS_SUSPENDED"):
+                    continue
+                side = {c["homeAway"]: c for c in comp["competitors"]}
+                ts = pd.Timestamp(ev["date"]).tz_convert("Europe/Rome")
+                done = bool(st.get("completed")) and st.get("state") == "post"
+                rows.append({"date": ts.tz_localize(None).normalize(), "time": ts.strftime("%H:%M"), "league": div,
+                             "home": side["home"]["team"].get("displayName"), "away": side["away"]["team"].get("displayName"),
+                             "fthg": float(side["home"].get("score")) if done else np.nan,
+                             "ftag": float(side["away"].get("score")) if done else np.nan})
+            except Exception:  # noqa: BLE001
+                continue
+    if not rows:
+        e = pd.DataFrame(columns=COLS)
+        return e, e
+    df = _finish(pd.DataFrame(rows), "espn", 3)
+    return df[df["fthg"].notna()], df[df["fthg"].isna()]
+
+
 # ----------------------------------------------------------------------------- legacy txt (v5)
 def load_legacy() -> pd.DataFrame:
     frames = []
@@ -321,13 +358,24 @@ def update(full: bool = False, offline: bool = False) -> tuple[pd.DataFrame, pd.
             register_known(pd.concat([fd["home"], fd["away"]]).unique())
         frames.append(fd)
         of_played, of_future = fetch_openfootball([cur - 1, cur])
-        log.info("openfootball: %d giocate, %d future", len(of_played), len(of_future))
-        frames.append(of_played)
+        es_played, es_future = fetch_espn()
+        log.info("openfootball: %d/%d  espn: %d/%d (giocate/future)", len(of_played), len(of_future),
+                 len(es_played), len(es_future))
+        ok_names = set()
+        for f in frames:
+            if len(f):
+                ok_names |= set(f["home"]) | set(f["away"])
+        sec = pd.concat([of_played, es_played, of_future, es_future])
+        unknown = sorted((set(sec["home"]) | set(sec["away"])) - ok_names) if len(sec) else []
+        # risultati da fonti secondarie solo se entrambe le squadre sono riconosciute (niente squadre "fantasma")
+        for f in (of_played, es_played):
+            frames.append(f[f["home"].isin(ok_names) & f["away"].isin(ok_names)])
         fd_fx = fetch_fd_fixtures()
-        fx = [fd_fx, of_future]
+        fx = [fd_fx, es_future, of_future]
         DIAG.update({"fd_results": int(len(fd)), "fd_fixtures": fd_fx.groupby("league").size().to_dict(),
+                     "espn_played": int(len(es_played)), "espn_future": es_future.groupby("league").size().to_dict(),
                      "of_played": int(len(of_played)), "of_future": int(len(of_future)),
-                     "unreachable": sorted(_DEAD_HOSTS)})
+                     "unknown_names": unknown, "unreachable": sorted(_DEAD_HOSTS)})
         log.info("diagnostica fonti: %s", DIAG)
 
     matches = _validate_odds(merge_sources(frames))

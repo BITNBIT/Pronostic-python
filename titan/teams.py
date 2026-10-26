@@ -30,7 +30,8 @@ ALIASES = {
     "ac perugia calcio": "Perugia", "reggina 1914": "Reggina", "us triestina": "Triestina",
     "calcio foggia 1920": "Foggia", "us alessandria": "Alessandria", "pordenone calcio": "Pordenone",
     "virtus francavilla": "Francavilla", "crotone fc": "Crotone", "fc crotone": "Crotone",
-    "novara calcio": "Novara", "us livorno": "Livorno", "as livorno": "Livorno",
+    "novara calcio": "Novara", "l r vicenza": "Vicenza", "vicenza calcio": "Vicenza",
+    "south tyrol": "Sudtirol", "us livorno": "Livorno", "as livorno": "Livorno",
 }
 
 _STOP = {"fc", "ac", "as", "us", "ss", "ssc", "acf", "cfc", "bc", "calcio", "sc", "ssd", "uc", "asd", "1909",
@@ -74,6 +75,11 @@ def normalize(name) -> str:
         m = difflib.get_close_matches(core, list(by_core), n=1, cutoff=0.86)
         if m:
             return by_core[m[0]]
+        # nome noto contenuto come parola intera ("Calcio Lecco" -> "Lecco"), solo se univoco
+        toks = core.split()
+        hits = [v for k, v in by_core.items() if k and all(t in toks for t in k.split())]
+        if len(hits) == 1:
+            return hits[0]
     return raw if raw == raw.title() or raw[:1].isupper() else raw.title()
 
 

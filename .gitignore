@@ -6,3 +6,5 @@ models/
 .venv/
 venv/
 output/telegram_sent.json
+data/matches.csv
+data/fixtures.csv
