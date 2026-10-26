@@ -1,0 +1,84 @@
+name: Versione portatile Windows
+
+on:
+  push:
+    branches: [main]
+    paths: ["titan/**", "requirements.txt", "portable/**", ".github/workflows/portable.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: portable
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      PY_EMBED: "3.12.10"
+      DIST: dist\TITAN-portatile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python portatile + librerie dentro la cartella
+        shell: pwsh
+        run: |
+          $d = $env:DIST
+          New-Item -ItemType Directory -Force "$d\python", "$d\app\data\legacy", "$d\app\output", "$d\cache" | Out-Null
+          Invoke-WebRequest "https://www.python.org/ftp/python/$env:PY_EMBED/python-$env:PY_EMBED-embed-amd64.zip" -OutFile py.zip
+          Expand-Archive py.zip -DestinationPath "$d\python"
+          # percorsi di ricerca: solo la cartella portatile (niente Python o librerie del sistema)
+          Set-Content -Encoding ascii "$d\python\python312._pth" "python312.zip`r`n.`r`nLib\site-packages`r`n..\app`r`nimport site"
+          python -m pip install --disable-pip-version-check --only-binary=:all: --target "$d\python\Lib\site-packages" -r requirements.txt
+          # runtime Visual C++ (OpenMP per LightGBM) accanto a python.exe: nessuna installazione richiesta
+          foreach ($dll in "vcomp140.dll", "msvcp140.dll", "msvcp140_1.dll", "msvcp140_2.dll", "vcruntime140_1.dll") {
+            if (Test-Path "C:\Windows\System32\$dll") { Copy-Item "C:\Windows\System32\$dll" "$d\python\" -Force }
+          }
+          # test interni delle librerie: inutili a runtime
+          Get-ChildItem "$d\python\Lib\site-packages" -Recurse -Directory -Filter tests | Remove-Item -Recurse -Force
+          Copy-Item -Recurse titan "$d\app\titan"
+          Copy-Item data\legacy\* "$d\app\data\legacy\"
+          Copy-Item output\backtest.json "$d\app\output\"
+          Copy-Item requirements.txt, LICENSE, README.md "$d\app\"
+          Copy-Item portable\TITAN.bat, portable\LEGGIMI.txt "$d\"
+
+      - name: Test completo della versione portatile
+        shell: cmd
+        run: |
+          cd /d %DIST%
+          set PYTHONNOUSERSITE=1
+          set PYTHONUTF8=1
+          python\python.exe -c "import sys, titan.models, lightgbm, sklearn, scipy, pandas; print('import ok', sys.version); print(sys.path)"
+          if errorlevel 1 exit /b 1
+          python\python.exe -m titan run --no-notify
+          if errorlevel 1 exit /b 1
+          python\python.exe -m titan predict Inter Milan
+          if errorlevel 1 exit /b 1
+          if not exist app\docs\index.html exit /b 1
+
+      - name: Pulizia (nessun dato personale o dataset nello zip) e compressione
+        shell: pwsh
+        run: |
+          $a = "$env:DIST\app"
+          foreach ($p in "$a\data\raw", "$a\models", "$a\docs", "$a\output\predictions") { if (Test-Path $p) { Remove-Item -Recurse -Force $p } }
+          Get-ChildItem "$a\data\*.csv", "$a\output\*" -Exclude backtest.json -ErrorAction SilentlyContinue | Remove-Item -Force
+          Get-ChildItem "$env:DIST\cache" -Force | Remove-Item -Recurse -Force
+          Get-ChildItem $env:DIST -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+          Compress-Archive -Path $env:DIST -DestinationPath TITAN-portatile-win64.zip -CompressionLevel Optimal
+          "{0:N1} MB" -f ((Get-Item TITAN-portatile-win64.zip).Length / 1MB)
+
+      - name: Pubblica la release "portatile"
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete portatile --yes --cleanup-tag || true
+          gh release create portatile TITAN-portatile-win64.zip --target "$GITHUB_SHA" \
+            --title "TITAN v6 – versione portatile Windows (non installa nulla)" --notes-file portable/RELEASE.md --latest

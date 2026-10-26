@@ -1,5 +1,7 @@
 # Pronostic-python · TITAN v6
 
+> ⚠️ **AVVISO: usa la [versione portatile](#uso-sul-pc-versione-portatile-consigliata).** Non installa nulla sul PC: estrai lo zip, doppio clic su `TITAN.bat`, e per rimuoverlo basta cancellare la cartella. Non serve più il vecchio `pip install` della v5.
+
 Sistema **automatico** di pronostici per Serie A e Serie B. Non va toccato niente a mano: ogni giorno GitHub Actions scarica risultati, quote e calendario, aggiorna i rating, riallena il modello, genera i pronostici, verifica quelli passati e pubblica la dashboard.
 
 ☕ Offrimi un caffè: https://buymeacoffee.com/bitnbit · Video (v5): https://youtu.be/kU5DPSxOFEk · Sito: https://bitnbit.com
@@ -45,18 +47,37 @@ Pubblica in automatico solo `output/` e `docs/`. Dashboard: **https://bitnbit.gi
 
 Telegram (facoltativo): in *Settings → Secrets → Actions* aggiungi `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`. Ogni partita viene inviata una sola volta, 48 ore prima.
 
-## Uso locale (facoltativo)
+## Uso sul PC: versione PORTATILE (consigliata)
 
-Windows: doppio clic su `avvia_titan.bat` (installa, aggiorna e apre la dashboard).
+> ⚠️ **Non installare niente con `pip` sul tuo PC.** Usa la versione portatile: Python e librerie sono già dentro la cartella.
+
+1. Scarica **[TITAN-portatile-win64.zip](https://github.com/BITNBIT/Pronostic-python/releases/download/portatile/TITAN-portatile-win64.zip)** (pagina [Releases](https://github.com/BITNBIT/Pronostic-python/releases/tag/portatile))
+2. Estrai **tutto** lo zip in una cartella (va bene anche una chiavetta USB)
+3. Doppio clic su **`TITAN.bat`** → opzione **1** (aggiorna i dati, calcola i pronostici, apre la dashboard)
+
+| | |
+|---|---|
+| Installazioni | nessuna: niente Python di sistema, niente `pip`, niente modifiche a registro o PATH |
+| Dove finiscono i file | solo nella cartella: dati e modello in `app\`, file temporanei e cache in `cache\` |
+| Disinstallazione | cancella la cartella |
+| Requisiti | Windows 10/11 a 64 bit e connessione internet. Il primo avvio scarica lo storico (1-3 minuti) |
+| Menu | pronostici + dashboard · partita singola · classifiche Serie A/B · backtest |
+
+Lo zip viene ricostruito e **testato in automatico** da GitHub Actions a ogni modifica del codice. Se Windows mostra "PC protetto" (SmartScreen): *Ulteriori informazioni → Esegui comunque*. `TITAN.bat` è un file di testo e puoi leggerlo prima di avviarlo.
+
+**Senza scaricare nulla**: la dashboard online è sempre aggiornata.
+
+### Per sviluppatori (Linux/macOS o modifiche al codice)
+
+Usa un ambiente virtuale dentro la cartella del progetto, così il Python di sistema resta pulito:
 
 ```bash
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m titan run                      # tutto il ciclo
 python -m titan predict Juve Napoli      # partita qualsiasi
-python -m titan predict Bari Palermo --odds 2.40 3.10 3.20   # con quote del mercato
 python -m titan table I2                 # classifica + Elo Serie B
 python -m titan backtest                 # backtest completo
-python -m titan update --full            # ricostruisce lo storico da zero
 ```
 
 Parametri (Elo, Poisson, soglie, giorni di anticipo) in `titan/config.py`.
@@ -68,5 +89,6 @@ titan/            sources · teams · engine (rating/feature) · models · marke
 data/             storico generato in automatico (cache Actions, non pubblicato) · legacy/ file v5
 output/           latest.json/csv · PRONOSTICI.md · history.csv (verifica live) · backtest.json · predictions/AAAA-MM-GG.json
 docs/index.html   dashboard
+portable/         TITAN.bat, LEGGIMI.txt e note della release portatile
 legacy/           TITAN v5 originale (menu manuale) e file classifica
 ```
