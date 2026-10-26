@@ -1,0 +1,72 @@
+name: TITAN pronostici automatici
+
+on:
+  schedule:
+    - cron: "10 5 * * *"        # ogni giorno ~07:10 ora italiana: risultati, rating, pronostici
+    - cron: "40 10 * * 5,6,0"   # ven-sab-dom ~12:40: quote aggiornate prima delle partite
+  workflow_dispatch:
+    inputs:
+      backtest:
+        description: "Esegui anche il backtest completo"
+        type: boolean
+        default: false
+      full:
+        description: "Ricostruisci tutto lo storico da zero"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: titan
+  cancel-in-progress: false
+
+jobs:
+  pronostici:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Dipendenze
+        run: pip install -r requirements.txt
+
+      - name: Cache file grezzi football-data
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}
+          restore-keys: raw-
+
+      - name: Ricostruzione storico (manuale)
+        if: ${{ inputs.full }}
+        run: python -m titan update --full
+
+      - name: Aggiornamento + training + pronostici + verifica
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m titan run
+
+      - name: Backtest settimanale (lunedì) o su richiesta
+        if: ${{ inputs.backtest || github.event.schedule == '10 5 * * *' }}
+        run: |
+          if [ "${{ inputs.backtest }}" = "true" ] || [ "$(date -u +%u)" = "1" ]; then
+            python -m titan backtest
+          fi
+
+      - name: Pubblica risultati
+        run: |
+          git config user.name "titan-bot"
+          git config user.email "titan-bot@users.noreply.github.com"
+          git add data/matches.csv data/fixtures.csv output docs
+          if git diff --cached --quiet; then echo "nessuna modifica"; exit 0; fi
+          git commit -m "pronostici $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git push
