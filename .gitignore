@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/raw/
+models/
+*.pkl
+.venv/
+venv/
+output/telegram_sent.json
