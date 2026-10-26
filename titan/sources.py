@@ -413,6 +413,9 @@ def build_fixtures(fx: list[pd.DataFrame], matches: pd.DataFrame, days: int | No
 
 
 def load() -> tuple[pd.DataFrame, pd.DataFrame]:
+    if not C.MATCHES_CSV.exists():  # primo avvio (es. versione portatile): scarica tutto lo storico
+        log.info("primo avvio: scarico lo storico partite (1-3 minuti)...")
+        return update()
     m = pd.read_csv(C.MATCHES_CSV, parse_dates=["date"], low_memory=False)
     f = pd.read_csv(C.FIXTURES_CSV, parse_dates=["date"]) if C.FIXTURES_CSV.exists() else pd.DataFrame(columns=COLS)
     register_known(pd.concat([m["home"], m["away"]]).unique())
