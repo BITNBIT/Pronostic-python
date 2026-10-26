@@ -28,6 +28,7 @@ NUM = [c for c in COLS if c not in ("date", "time", "league", "home", "away", "s
 
 # ----------------------------------------------------------------------------- http
 _DEAD_HOSTS: set[str] = set()
+DIAG: dict = {}
 
 
 def http_get(url: str, retries: int = 3) -> bytes | None:
@@ -322,7 +323,12 @@ def update(full: bool = False, offline: bool = False) -> tuple[pd.DataFrame, pd.
         of_played, of_future = fetch_openfootball([cur - 1, cur])
         log.info("openfootball: %d giocate, %d future", len(of_played), len(of_future))
         frames.append(of_played)
-        fx = [fetch_fd_fixtures(), of_future]
+        fd_fx = fetch_fd_fixtures()
+        fx = [fd_fx, of_future]
+        DIAG.update({"fd_results": int(len(fd)), "fd_fixtures": fd_fx.groupby("league").size().to_dict(),
+                     "of_played": int(len(of_played)), "of_future": int(len(of_future)),
+                     "unreachable": sorted(_DEAD_HOSTS)})
+        log.info("diagnostica fonti: %s", DIAG)
 
     matches = _validate_odds(merge_sources(frames))
     matches = matches[matches["date"] <= pd.Timestamp(date.today() + timedelta(days=1))]
