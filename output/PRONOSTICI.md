@@ -1,4 +1,4 @@
-# Pronostici TITAN v6 — aggiornato 2026-10-26 19:11
+# Pronostici TITAN v6 — aggiornato 2026-10-26 19:16
 
 | Data | Lega | Partita | 1 | X | 2 | Segno | Più probabile | O/U 2.5 | GG | Esatto |
 |---|---|---|---|---|---|---|---|---|---|---|
