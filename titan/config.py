@@ -25,7 +25,7 @@ LEAGUES = {
 
 FD_BASE = "https://www.football-data.co.uk/mmz4281/{code}/{div}.csv"
 FD_FIXTURES = "https://www.football-data.co.uk/fixtures.csv"
-ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/{code}/scoreboard?dates={d1}-{d2}&limit=300"
+ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/{code}/scoreboard?dates={day}"
 OF_BASE = "https://raw.githubusercontent.com/openfootball/football.json/master/{season}/{code}.json"
 # mirror GitHub del dataset football-data (quote incluse) usato come fallback storico
 CLUBDATA_URL = "https://raw.githubusercontent.com/xgabora/Club-Football-Match-Data-2000-2025/main/data/Matches.csv"

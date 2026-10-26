@@ -45,8 +45,9 @@ def http_get(url: str, retries: int = 3) -> bytes | None:
                 if r.status == 200:
                     return r.read()
                 return None
-        except urllib.error.HTTPError as e:  # 404 = stagione inesistente: inutile riprovare
-            if e.code == 404:
+        except urllib.error.HTTPError as e:  # 4xx = richiesta specifica non valida: inutile riprovare
+            if 400 <= e.code < 500 and e.code != 429:
+                _ERRORS[host] = f"HTTP {e.code}"
                 return None
             _ERRORS[host] = f"HTTP {e.code}"
             log.debug("HTTP %s %s", e.code, url)
@@ -240,17 +241,17 @@ def fetch_openfootball(seasons: list[int]) -> tuple[pd.DataFrame, pd.DataFrame]:
 # ----------------------------------------------------------------------------- ESPN (risultati recenti + calendario)
 def fetch_espn(days_back: int = 14, days_ahead: int = 14) -> tuple[pd.DataFrame, pd.DataFrame]:
     today = date.today()
-    d1 = (today - timedelta(days=days_back)).strftime("%Y%m%d")
-    d2 = (today + timedelta(days=days_ahead)).strftime("%Y%m%d")
     rows = []
+    days = [(today + timedelta(days=i)).strftime("%Y%m%d") for i in range(-days_back, days_ahead + 1)]
     for div, meta in C.LEAGUES.items():
-        b = http_get(C.ESPN_BASE.format(code=meta["espn"], d1=d1, d2=d2), retries=2)
-        if not b:
-            continue
-        try:
-            events = json.loads(b).get("events", [])
-        except Exception:  # noqa: BLE001
-            continue
+        events = []
+        for d in days:  # una richiesta per giorno: formato sempre accettato dall'API
+            b = http_get(C.ESPN_BASE.format(code=meta["espn"], day=d), retries=2)
+            if b:
+                try:
+                    events += json.loads(b).get("events", [])
+                except Exception:  # noqa: BLE001
+                    pass
         for ev in events:
             try:
                 comp = ev["competitions"][0]
