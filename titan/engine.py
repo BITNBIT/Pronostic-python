@@ -7,7 +7,7 @@ compresa la partita da prevedere). Dopo la feature extraction lo stato viene agg
 from __future__ import annotations
 
 import math
-from collections import deque
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -15,7 +15,8 @@ import pandas as pd
 
 from .config import Params
 
-LEVEL = {"I1": 1, "I2": 2}
+def level(league: str) -> int:
+    return int(league[-1]) if league and league[-1].isdigit() else 1
 
 
 @dataclass
@@ -53,8 +54,8 @@ class RatingEngine:
     def __init__(self, p: Params | None = None):
         self.p = p or Params()
         self.teams: dict[str, Team] = {}
-        self.mu = {"I1": math.log(1.30), "I2": math.log(1.20)}
-        self.hg = {"I1": 0.22, "I2": 0.25}
+        self.mu = defaultdict(lambda: math.log(1.25), {"I1": math.log(1.30), "I2": math.log(1.20)})
+        self.hg = defaultdict(lambda: 0.23, {"I1": 0.22, "I2": 0.25})
         self.mu_lr = 0.002
         self.latest = 0
 
@@ -68,7 +69,7 @@ class RatingEngine:
 
     def _new(self, name: str, league: str, season: int) -> Team:
         q = self.p.q_promoted
-        t = Team(elo=self._q(league, "elo", q, 1500.0 if league == "I1" else 1380.0),
+        t = Team(elo=self._q(league, "elo", q, 1500.0 if level(league) == 1 else 1380.0),
                  att=self._q(league, "att", q, 0.0), dfn=self._q(league, "dfn", q, 0.0),
                  league=league, season=season)
         self.teams[name] = t
@@ -82,7 +83,7 @@ class RatingEngine:
             # nuova stagione: regressione verso la media e reset classifica
             if league != t.league:
                 # promossa (B->A) parte bassa nella nuova lega, retrocessa (A->B) parte alta
-                q = self.p.q_promoted if LEVEL[league] < LEVEL[t.league] else 1 - self.p.q_promoted
+                q = self.p.q_promoted if level(league) < level(t.league) else 1 - self.p.q_promoted
                 t.att = 0.5 * t.att + 0.5 * self._q(league, "att", q, t.att)
                 t.dfn = 0.5 * t.dfn + 0.5 * self._q(league, "dfn", q, t.dfn)
                 target = self._q(league, "elo", q, t.elo)
@@ -119,7 +120,7 @@ class RatingEngine:
         th = self._prepare(home, league, season)
         ta = self._prepare(away, league, season)
         hfa = self.p.elo_hfa
-        f = {"lvl": LEVEL.get(league, 2)}
+        f = {"lvl": level(league)}
         f["elo_h"], f["elo_a"] = th.elo, ta.elo
         f["elo_d"] = th.elo + hfa - ta.elo
         f["elo_e"] = 1.0 / (1.0 + 10 ** (-f["elo_d"] / 400))

@@ -10,7 +10,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from . import betting, sources, tracker
+from . import betting, markets, sources, tracker
 from . import config as C
 from .engine import RatingEngine
 from .models import DualModel
@@ -77,8 +77,11 @@ def predict_fixtures(model: DualModel, fx: pd.DataFrame, eng: RatingEngine, p: C
         "model": pr["model"], "elo_h": fx["elo_h"].round(0), "elo_a": fx["elo_a"].round(0),
         "form_h": [_form(eng, t) for t in fx["home"]], "form_a": [_form(eng, t) for t in fx["away"]],
     }, index=fx.index)
-    for c in ("bet", "odds", "edge", "stake"):
+    for c in ("bet", "odds", "edge"):
         out[f"vb_{c}"] = vb[c] if len(vb) else np.nan
+    sp = markets.best_pick(pr).reset_index(drop=True)
+    out = out.reset_index(drop=True)
+    out["safe_pick"], out["safe_p"] = sp["safe_pick"], sp["safe_p"]
     out["ou_pick"] = np.where(out["o25"] >= 0.5, "Over 2.5", "Under 2.5")
     out["gg_pick"] = np.where(out["gg"] >= 0.5, "GG", "NG")
     # rating sintetico 1-5 stelle per la giocata principale (dal backtest: conf>0.65 ~ 70% hit)

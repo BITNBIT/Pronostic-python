@@ -40,12 +40,17 @@ jobs:
       - name: Dipendenze
         run: pip install -r requirements.txt
 
-      - name: Cache file grezzi football-data
+      # lo storico partite/quote resta nella cache privata delle Actions, non viene pubblicato nel repo
+      - name: Cache dati e modello
         uses: actions/cache@v4
         with:
-          path: data/raw
-          key: raw-${{ github.run_id }}
-          restore-keys: raw-
+          path: |
+            data/matches.csv
+            data/fixtures.csv
+            data/raw
+            models
+          key: titan-data-${{ github.run_id }}
+          restore-keys: titan-data-
 
       - name: Ricostruzione storico (manuale)
         if: ${{ inputs.full }}
@@ -71,7 +76,7 @@ jobs:
         run: |
           git config user.name "titan-bot"
           git config user.email "titan-bot@users.noreply.github.com"
-          git add data/matches.csv data/fixtures.csv output docs
+          git add output docs
           if git diff --cached --quiet; then echo "nessuna modifica"; exit 0; fi
           git commit -m "pronostici $(date -u +'%Y-%m-%d %H:%M') UTC"
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
