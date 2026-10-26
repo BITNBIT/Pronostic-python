@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: "10 5 * * *"        # ogni giorno ~07:10 ora italiana: risultati, rating, pronostici
     - cron: "40 10 * * 5,6,0"   # ven-sab-dom ~12:40: quote aggiornate prima delle partite
+    - cron: "20 15 * * *"       # ogni giorno ~17:20: nuovo calendario/quote prima delle partite serali
   push:
     branches: [main]
     paths: ["titan/**", "requirements.txt", ".github/workflows/titan.yml"]

@@ -28,6 +28,8 @@ NUM = [c for c in COLS if c not in ("date", "time", "league", "home", "away", "s
 
 # ----------------------------------------------------------------------------- http
 _DEAD_HOSTS: set[str] = set()
+_ERRORS: dict[str, str] = {}
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 DIAG: dict = {}
 
 
@@ -37,7 +39,8 @@ def http_get(url: str, retries: int = 3) -> bytes | None:
         return None
     for i in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": C.USER_AGENT})
+            ua = BROWSER_UA if "espn.com" in host else C.USER_AGENT
+            req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept": "application/json,text/csv,*/*"})
             with urllib.request.urlopen(req, timeout=C.HTTP_TIMEOUT) as r:
                 if r.status == 200:
                     return r.read()
@@ -45,8 +48,10 @@ def http_get(url: str, retries: int = 3) -> bytes | None:
         except urllib.error.HTTPError as e:  # 404 = stagione inesistente: inutile riprovare
             if e.code == 404:
                 return None
+            _ERRORS[host] = f"HTTP {e.code}"
             log.debug("HTTP %s %s", e.code, url)
         except Exception as e:  # noqa: BLE001
+            _ERRORS[host] = f"{type(e).__name__}: {str(e)[:120]}"
             log.debug("errore rete %s: %s", url, e)
         time.sleep(1.5 * (i + 1))
     log.warning("host non raggiungibile, salto: %s", host)
@@ -375,7 +380,7 @@ def update(full: bool = False, offline: bool = False) -> tuple[pd.DataFrame, pd.
         DIAG.update({"fd_results": int(len(fd)), "fd_fixtures": fd_fx.groupby("league").size().to_dict(),
                      "espn_played": int(len(es_played)), "espn_future": es_future.groupby("league").size().to_dict(),
                      "of_played": int(len(of_played)), "of_future": int(len(of_future)),
-                     "unknown_names": unknown, "unreachable": sorted(_DEAD_HOSTS)})
+                     "unknown_names": unknown, "unreachable": {h: _ERRORS.get(h, "") for h in sorted(_DEAD_HOSTS)}})
         log.info("diagnostica fonti: %s", DIAG)
 
     matches = _validate_odds(merge_sources(frames))
