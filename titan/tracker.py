@@ -45,6 +45,9 @@ def update(preds: pd.DataFrame, matches: pd.DataFrame) -> pd.DataFrame:
     m = h.drop(columns=["fthg", "ftag"], errors="ignore").merge(res, on=KEY, how="left")
     todo = (~m["settled"]) & m["fthg"].notna()
     if todo.any():
+        # colonne lette dal CSV ancora vuote = float64: pandas >= 3 rifiuta "1"/"X"/"2" e i True/False
+        for col in ("result", "hit", "hit_o25", "hit_gg", "hit_safe", "hit_score", "bet_win"):
+            m[col] = m[col].astype(object) if col in m.columns else pd.Series(np.nan, index=m.index, dtype=object)
         r = m.loc[todo]
         hg, ag = r["fthg"].astype(int), r["ftag"].astype(int)
         result = np.where(hg > ag, "1", np.where(hg == ag, "X", "2"))
