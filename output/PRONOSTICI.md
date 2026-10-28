@@ -1,4 +1,4 @@
-# Pronostici TITAN v6 — aggiornato 2026-10-28 08:25
+# Pronostici TITAN v6 — aggiornato 2026-10-28 11:19
 
 **Storico live**: 10 partite verificate · 1X2 70.0% · O/U2.5 70.0% · più probabile 100.0%
 
