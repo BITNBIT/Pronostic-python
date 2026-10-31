@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-30T19:56:47",
+ "generated": "2026-10-31T10:55:23",
  "data": {
   "matches": 24208,
   "last_result": "2026-10-29",
@@ -18,7 +18,7 @@
     "I1": 10,
     "I2": 10
    },
-   "espn_played": 60,
+   "espn_played": 58,
    "espn_future": {
     "I1": 20,
     "I2": 20
